@@ -31,7 +31,9 @@ model Producer {
 }
 
 model Crops {
-  id        Int      @id @default(autoincrement())
+  id        Int        @id @default(autoincrement())
+  plantings Planting[]
+
   name      String
   createdAt DateTime @default(now()) @map("created_at")
   updatedAt DateTime @updatedAt @map("updated_at")
@@ -40,21 +42,39 @@ model Crops {
 }
 
 model Property {
-  id         Int      @id @default(autoincrement())
-  producer   Producer @relation(fields: [producerId], references: [id])
-  producerId Int      @map("producer_id")
+  id         Int        @id @default(autoincrement())
+  producer   Producer   @relation(fields: [producerId], references: [id])
+  producerId Int        @map("producer_id")
+  plantings  Planting[]
 
   name           String
   city           String
   state          String
-  farmArea       Decimal @map("farm_area")
-  arableArea     Decimal @map("arable_area")
-  vegetationArea Decimal @map("vegetation_area")
+  farmArea       Decimal @map("farm_area") @db.Decimal(10, 2)
+  arableArea     Decimal @map("arable_area") @db.Decimal(10, 2)
+  vegetationArea Decimal @map("vegetation_area") @db.Decimal(10, 2)
 
   createdAt DateTime @default(now()) @map("created_at")
   updatedAt DateTime @updatedAt @map("updated_at")
 
   @@map("properties")
+}
+
+model Planting {
+  id         Int      @id @default(autoincrement())
+  property   Property @relation(fields: [propertyId], references: [id])
+  propertyId Int      @map("property_id")
+  crop       Crops    @relation(fields: [cropId], references: [id])
+  cropId     Int      @map("crop_id")
+
+  year Int
+  area Decimal  @db.Decimal(10, 2)
+  yeld Decimal? @db.Decimal(10, 2)
+
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  @@map("plantings")
 }
 
 enum DocumentType {

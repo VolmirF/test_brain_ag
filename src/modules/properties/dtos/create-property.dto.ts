@@ -1,4 +1,5 @@
-import { IsNotEmpty, IsNumber, IsString } from 'class-validator';
+import { Type } from 'class-transformer';
+import { IsDecimal, IsNotEmpty, IsNumber, IsString } from 'class-validator';
 
 import { IsGreaterThanEqual } from 'src/common/decorators/isGreaterThanEqual.decorator';
 
@@ -19,16 +20,19 @@ export class CreatePropertyDto {
   @IsNotEmpty()
   state: string;
 
-  @IsNumber()
+  @Type(() => String)
+  @IsDecimal()
   @IsNotEmpty()
   @IsGreaterThanEqual(['arableArea', 'vegetationArea'])
-  farmArea: number;
+  farmArea: string;
 
-  @IsNumber()
+  @Type(() => String)
+  @IsDecimal()
   @IsNotEmpty()
-  arableArea: number;
+  arableArea: string;
 
-  @IsNumber()
+  @Type(() => String)
+  @IsDecimal()
   @IsNotEmpty()
-  vegetationArea: number;
+  vegetationArea: string;
 }

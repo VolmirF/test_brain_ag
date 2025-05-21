@@ -1,4 +1,11 @@
-import { IsNotEmpty, IsNumber, IsOptional, IsString } from 'class-validator';
+import { Type } from 'class-transformer';
+import {
+  IsDecimal,
+  IsNotEmpty,
+  IsNumber,
+  IsOptional,
+  IsString,
+} from 'class-validator';
 
 export class UpdatePropertyDto {
   @IsNumber()
@@ -21,18 +28,21 @@ export class UpdatePropertyDto {
   @IsOptional()
   state: string;
 
-  @IsNumber()
+  @Type(() => String)
+  @IsDecimal()
   @IsNotEmpty()
   @IsOptional()
-  farmArea: number;
+  farmArea: string;
 
-  @IsNumber()
+  @Type(() => String)
+  @IsDecimal()
   @IsNotEmpty()
   @IsOptional()
-  arableArea: number;
+  arableArea: string;
 
-  @IsNumber()
+  @Type(() => String)
+  @IsDecimal()
   @IsNotEmpty()
   @IsOptional()
-  vegetationArea: number;
+  vegetationArea: string;
 }

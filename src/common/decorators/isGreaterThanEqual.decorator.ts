@@ -39,7 +39,7 @@ export function IsGreaterThanEqual(
 
           let sum = 0;
           for (const property of relatedPropertyName) {
-            sum += args.object[property];
+            sum += Number(args.object[property]);
           }
           return value >= sum;
         },
