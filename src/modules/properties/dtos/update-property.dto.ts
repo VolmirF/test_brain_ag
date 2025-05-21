@@ -1,4 +1,4 @@
-import { Type } from 'class-transformer';
+import { Transform, Type } from 'class-transformer';
 import {
   IsDecimal,
   IsNotEmpty,
@@ -6,6 +6,8 @@ import {
   IsOptional,
   IsString,
 } from 'class-validator';
+
+import { IsValidState } from 'src/common/decorators/isValidState.decorator';
 
 export class UpdatePropertyDto {
   @IsNumber()
@@ -26,6 +28,8 @@ export class UpdatePropertyDto {
   @IsString()
   @IsNotEmpty()
   @IsOptional()
+  @Transform(({ value }) => (value + '').toUpperCase())
+  @IsValidState()
   state: string;
 
   @Type(() => String)
