@@ -28,6 +28,16 @@ model Producer {
   @@map("producers")
 }
 
+
+model Crops {
+  id           Int          @id @default(autoincrement())
+  name         String
+  createdAt    DateTime     @default(now())
+  updatedAt    DateTime     @updatedAt
+
+  @@map("crops")
+}
+
 enum DocumentType {
   CPF
   CNPJ

@@ -8,8 +8,8 @@ import {
   Post,
 } from '@nestjs/common';
 import { ProducersService } from './producers.service';
-import { CreateProducerDto } from './dto/create-producer.dto';
-import { UpdateProducerDto } from './dto/update-producer.dto';
+import { CreateProducerDto } from './dtos/create-producer.dto';
+import { UpdateProducerDto } from './dtos/update-producer.dto';
 import { Producer } from '@prisma/client';
 
 @Controller('producers')

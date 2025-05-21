@@ -1,3 +1,4 @@
+import { CropsModule } from './modules/crops/crops.module';
 import { Module } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
 
@@ -7,6 +8,7 @@ import { validate } from 'config/env.validation';
 
 @Module({
   imports: [
+    CropsModule,
     ConfigModule.forRoot({
       isGlobal: true,
       load: [configuration],
