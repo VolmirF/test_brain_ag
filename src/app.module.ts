@@ -1,3 +1,4 @@
+import { DashboardModule } from './modules/dashboard/dashboard.module';
 import { PlantingsModule } from './modules/plantings/plantings.module';
 import { PropertiesModule } from './modules/properties/properties.module';
 import { CropsModule } from './modules/crops/crops.module';
@@ -19,6 +20,7 @@ import { validate } from 'config/env.validation';
     CropsModule,
     ProducersModule,
     PlantingsModule,
+    DashboardModule,
   ],
   controllers: [],
   providers: [],
