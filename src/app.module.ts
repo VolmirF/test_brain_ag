@@ -1,3 +1,4 @@
+import { PropertiesModule } from './modules/properties/properties.module';
 import { CropsModule } from './modules/crops/crops.module';
 import { Module } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
@@ -8,6 +9,7 @@ import { validate } from 'config/env.validation';
 
 @Module({
   imports: [
+    PropertiesModule,
     CropsModule,
     ConfigModule.forRoot({
       isGlobal: true,

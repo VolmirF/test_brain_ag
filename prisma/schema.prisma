@@ -16,26 +16,45 @@ datasource db {
 }
 
 model Producer {
-  id           Int          @id @default(autoincrement())
+  id         Int        @id @default(autoincrement())
+  properties Property[]
+
   name         String
   document     String       @unique
-  documentType DocumentType
+  documentType DocumentType @map("document_type")
   city         String
   state        String
-  createdAt    DateTime     @default(now())
-  updatedAt    DateTime     @updatedAt
+  createdAt    DateTime     @default(now()) @map("created_at")
+  updatedAt    DateTime     @updatedAt @map("updated_at")
 
   @@map("producers")
 }
 
-
 model Crops {
-  id           Int          @id @default(autoincrement())
-  name         String
-  createdAt    DateTime     @default(now())
-  updatedAt    DateTime     @updatedAt
+  id        Int      @id @default(autoincrement())
+  name      String
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
 
   @@map("crops")
+}
+
+model Property {
+  id         Int      @id @default(autoincrement())
+  producer   Producer @relation(fields: [producerId], references: [id])
+  producerId Int      @map("producer_id")
+
+  name           String
+  city           String
+  state          String
+  farmArea       Decimal @map("farm_area")
+  arableArea     Decimal @map("arable_area")
+  vegetationArea Decimal @map("vegetation_area")
+
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  @@map("properties")
 }
 
 enum DocumentType {
