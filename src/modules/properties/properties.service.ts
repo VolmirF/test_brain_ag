@@ -1,14 +1,38 @@
 import { BadRequestException, Injectable } from '@nestjs/common';
 import { PrismaService } from 'src/database/prisma.service';
+
 import { CreatePropertyDto } from './dtos/create-property.dto';
 import { UpdatePropertyDto } from './dtos/update-property.dto';
+import { GetPropertiesDto } from './dtos/get-properties.dto';
+import { Prisma } from '@prisma/client';
 
 @Injectable()
 export class PropertiesService {
   constructor(private readonly prisma: PrismaService) {}
 
-  async getProperties() {
-    return await this.prisma.property.findMany({});
+  async getProperties(params: GetPropertiesDto) {
+    const whereQuery: Prisma.PropertyFindManyArgs['where'] = {
+      state: params.state,
+      name: { contains: params.name, mode: 'insensitive' },
+      producerId: params.producerId,
+    };
+
+    const properties = await this.prisma.property.findMany({
+      where: whereQuery,
+      skip: (params.page - 1) * params.pageSize,
+      take: params.pageSize,
+    });
+    const countProperties = await this.prisma.property.count({
+      where: whereQuery,
+    });
+
+    return {
+      data: properties,
+      page: params.page,
+      pageSize: params.pageSize,
+      totalPages: Math.ceil(countProperties / params.pageSize),
+      total: countProperties,
+    };
   }
 
   async getPropertyById(id: number) {

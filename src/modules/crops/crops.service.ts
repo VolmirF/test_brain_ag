@@ -3,13 +3,37 @@ import { Injectable } from '@nestjs/common';
 import { PrismaService } from 'src/database/prisma.service';
 import { CreateCropDto } from './dtos/create-crop.dto';
 import { UpdateCropDto } from './dtos/update-crop.dto';
+import { GetCropsDto } from './dtos/get-crops.dto';
+import { Prisma } from '@prisma/client';
 
 @Injectable()
 export class CropsService {
-  constructor(private prisma: PrismaService) {}
+  constructor(private readonly prisma: PrismaService) {}
 
-  async getCrops() {
-    return await this.prisma.crops.findMany({});
+  async getCrops(params: GetCropsDto) {
+    const whereQuery: Prisma.CropsFindManyArgs['where'] = {
+      name: {
+        contains: params.name,
+        mode: 'insensitive',
+      },
+    };
+
+    const crops = await this.prisma.crops.findMany({
+      where: whereQuery,
+      skip: (params.page - 1) * params.pageSize,
+      take: params.pageSize,
+    });
+    const countCrops = await this.prisma.crops.count({
+      where: whereQuery,
+    });
+
+    return {
+      data: crops,
+      page: params.page,
+      pageSize: params.pageSize,
+      totalPages: Math.ceil(countCrops / params.pageSize),
+      total: countCrops,
+    };
   }
 
   async getCropById(id: number) {

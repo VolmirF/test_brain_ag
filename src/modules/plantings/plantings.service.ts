@@ -1,15 +1,38 @@
 import { Injectable } from '@nestjs/common';
+import { Prisma } from '@prisma/client';
 
 import { PrismaService } from 'src/database/prisma.service';
 import { CreatePlantingDto } from './dtos/create-planting.dto';
 import { UpdatePlantingDto } from './dtos/update-planting.dto';
+import { GetPlantingsDto } from './dtos/get-plantings.dto';
 
 @Injectable()
 export class PlantingsService {
   constructor(private readonly prisma: PrismaService) {}
 
-  async getPlantings() {
-    return await this.prisma.planting.findMany();
+  async getPlantings(params: GetPlantingsDto) {
+    const whereQuery: Prisma.PlantingFindManyArgs['where'] = {
+      propertyId: params.propertyId,
+      cropId: params.cropId,
+      year: params.year,
+    };
+
+    const plantings = await this.prisma.planting.findMany({
+      where: whereQuery,
+      skip: (params.page - 1) * params.pageSize,
+      take: params.pageSize,
+    });
+    const countPlantings = await this.prisma.planting.count({
+      where: whereQuery,
+    });
+
+    return {
+      data: plantings,
+      page: params.page,
+      pageSize: params.pageSize,
+      totalPages: Math.ceil(countPlantings / params.pageSize),
+      total: countPlantings,
+    };
   }
 
   async getPlantingById(id: number) {

@@ -8,12 +8,12 @@ async function bootstrap() {
 
   // Set up swagger docs
   const config = new DocumentBuilder()
-    .setTitle('Test Brain Ag')
-    .setDescription('The Api for the test')
+    .setTitle('Agriculture management API brain.ag')
+    .setDescription('Api for agriculture management.')
     .setVersion('1.0')
     .build();
   const document = SwaggerModule.createDocument(app, config);
-  SwaggerModule.setup(``, app, document);
+  SwaggerModule.setup(`api`, app, document);
 
   app.useGlobalPipes(new ValidationPipe({ transform: true, whitelist: true }));
 

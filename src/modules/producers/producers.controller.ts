@@ -7,36 +7,43 @@ import {
   Patch,
   Post,
 } from '@nestjs/common';
+import { ApiOperation } from '@nestjs/swagger';
+
 import { ProducersService } from './producers.service';
 import { CreateProducerDto } from './dtos/create-producer.dto';
 import { UpdateProducerDto } from './dtos/update-producer.dto';
-import { Producer } from '@prisma/client';
+import { GetProducersDto } from './dtos/get-producers.dto';
 
 @Controller('producers')
 export class ProducersController {
   constructor(private readonly producersService: ProducersService) {}
 
   @Get()
-  getProducers(): Promise<Producer[]> {
-    return this.producersService.getProducers();
+  @ApiOperation({ summary: 'Get all producers' })
+  getProducers(params: GetProducersDto) {
+    return this.producersService.getProducers(params);
   }
 
   @Get(':id')
+  @ApiOperation({ summary: 'Get producer by id' })
   getProducerById(@Param('id') id: number) {
     return this.producersService.getProducerById(id);
   }
 
   @Post()
+  @ApiOperation({ summary: 'Create producer' })
   createProducer(@Body() data: CreateProducerDto) {
     return this.producersService.createProducer(data);
   }
 
   @Patch(':id')
+  @ApiOperation({ summary: 'Update producer' })
   updateProducer(@Param('id') id: number, @Body() data: UpdateProducerDto) {
     return this.producersService.updateProducer(id, data);
   }
 
   @Delete(':id')
+  @ApiOperation({ summary: 'Delete producer' })
   deleteProducer(@Param('id') id: number) {
     return this.producersService.deleteProducer(id);
   }

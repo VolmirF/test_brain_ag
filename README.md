@@ -1,6 +1,15 @@
 ## Description
 
-[Nest](https://github.com/nestjs/nest) framework TypeScript starter repository.
+This project is a backend for a agricultural management system. The project is developed as a part of a challenge from [brain.ag](https://www.serasaexperian.com.br/solucoes/agro/)
+
+## Technologies
+
+- [Node](https://nodejs.org/)
+- [Nest](https://github.com/nestjs/nest)
+- [TypeScript](https://www.typescriptlang.org/)
+- [Prisma](https://www.prisma.io/)
+- [PostgreSQL](https://www.postgresql.org/)
+- [PNPM](https://pnpm.io/)
 
 ## Project setup
 
