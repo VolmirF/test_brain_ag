@@ -1,8 +1,8 @@
 import { Transform, Type } from 'class-transformer';
 import { IsDecimal, IsNotEmpty, IsNumber, IsString } from 'class-validator';
 
-import { IsGreaterThanEqual } from 'src/common/decorators/isGreaterThanEqual.decorator';
-import { IsValidState } from 'src/common/decorators/isValidState.decorator';
+import { IsGreaterThanEqual } from '../../../common/decorators/isGreaterThanEqual.decorator';
+import { IsValidState } from '../../../common/decorators/isValidState.decorator';
 
 export class CreatePropertyDto {
   @IsNumber()

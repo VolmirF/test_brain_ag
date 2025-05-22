@@ -2,8 +2,8 @@ import { DocumentType } from '@prisma/client';
 import { Expose, Transform } from 'class-transformer';
 import { IsNotEmpty, IsString } from 'class-validator';
 
-import { IsValidDocument } from 'src/common/decorators/IsValidDocument.decorator';
-import { IsValidState } from 'src/common/decorators/isValidState.decorator';
+import { IsValidDocument } from '../../../common/decorators/IsValidDocument.decorator';
+import { IsValidState } from '../../../common/decorators/isValidState.decorator';
 
 export class CreateProducerDto {
   @IsString()

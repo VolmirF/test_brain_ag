@@ -4,15 +4,15 @@ import { IsNumber, IsOptional, Max, Min } from 'class-validator';
 export class GetPlantingsDto {
   @IsNumber()
   @IsOptional()
-  propertyId: number;
+  propertyId?: number;
 
   @IsNumber()
   @IsOptional()
-  cropId: number;
+  cropId?: number;
 
   @IsNumber()
   @IsOptional()
-  year: number;
+  year?: number;
 
   @IsOptional()
   @Type(() => Number)

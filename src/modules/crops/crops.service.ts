@@ -1,10 +1,10 @@
 import { Injectable } from '@nestjs/common';
+import { Prisma } from '@prisma/client';
 
-import { PrismaService } from 'src/database/prisma.service';
+import { PrismaService } from '../../database/prisma.service';
 import { CreateCropDto } from './dtos/create-crop.dto';
 import { UpdateCropDto } from './dtos/update-crop.dto';
 import { GetCropsDto } from './dtos/get-crops.dto';
-import { Prisma } from '@prisma/client';
 
 @Injectable()
 export class CropsService {

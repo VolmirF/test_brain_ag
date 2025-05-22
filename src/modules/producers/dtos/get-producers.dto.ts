@@ -7,7 +7,7 @@ import {
   Max,
   Min,
 } from 'class-validator';
-import { IsValidState } from 'src/common/decorators/isValidState.decorator';
+import { IsValidState } from '../../../common/decorators/isValidState.decorator';
 
 export class GetProducersDto {
   @IsOptional()

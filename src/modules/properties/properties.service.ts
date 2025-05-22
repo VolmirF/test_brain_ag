@@ -1,5 +1,5 @@
 import { BadRequestException, Injectable } from '@nestjs/common';
-import { PrismaService } from 'src/database/prisma.service';
+import { PrismaService } from '../../database/prisma.service';
 
 import { CreatePropertyDto } from './dtos/create-property.dto';
 import { UpdatePropertyDto } from './dtos/update-property.dto';
@@ -85,7 +85,17 @@ export class PropertiesService {
           areas[areaKey] ??= Number(property[areaKey]);
         });
       }
+      if (
+        areas.farmArea === undefined ||
+        areas.arableArea === undefined ||
+        areas.vegetationArea === undefined
+      ) {
+        // Problem with the register in db
+        return false;
+      }
       return areas.farmArea >= areas.arableArea + areas.vegetationArea;
     }
+    // Area is not been updated, no need to check
+    return true;
   }
 }

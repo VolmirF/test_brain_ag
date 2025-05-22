@@ -1,52 +1,39 @@
 import { Transform, Type } from 'class-transformer';
-import {
-  IsDecimal,
-  IsNotEmpty,
-  IsNumber,
-  IsOptional,
-  IsString,
-} from 'class-validator';
+import { IsDecimal, IsNumber, IsOptional, IsString } from 'class-validator';
 
-import { IsValidState } from 'src/common/decorators/isValidState.decorator';
+import { IsValidState } from '../../../common/decorators/isValidState.decorator';
 
 export class UpdatePropertyDto {
+  @IsOptional()
   @IsNumber()
-  @IsNotEmpty()
-  @IsOptional()
-  producerId: number;
+  producerId?: number;
 
-  @IsString()
-  @IsNotEmpty()
   @IsOptional()
-  name: string;
+  @IsString()
+  name?: string;
 
-  @IsString()
-  @IsNotEmpty()
   @IsOptional()
-  city: string;
+  @IsString()
+  city?: string;
 
-  @IsString()
-  @IsNotEmpty()
   @IsOptional()
+  @IsString()
   @Transform(({ value }) => (value + '').toUpperCase())
   @IsValidState()
-  state: string;
+  state?: string;
 
   @Type(() => String)
-  @IsDecimal()
-  @IsNotEmpty()
   @IsOptional()
-  farmArea: string;
+  @IsDecimal()
+  farmArea?: string;
 
   @Type(() => String)
-  @IsDecimal()
-  @IsNotEmpty()
   @IsOptional()
-  arableArea: string;
+  @IsDecimal()
+  arableArea?: string;
 
   @Type(() => String)
-  @IsDecimal()
-  @IsNotEmpty()
   @IsOptional()
-  vegetationArea: string;
+  @IsDecimal()
+  vegetationArea?: string;
 }
