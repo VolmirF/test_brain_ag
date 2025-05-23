@@ -1,4 +1,4 @@
-import { Module } from '@nestjs/common';
+import { MiddlewareConsumer, Module, NestModule } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
 
 import { DashboardModule } from './modules/dashboard/dashboard.module';
@@ -9,6 +9,7 @@ import { ProducersModule } from './modules/producers/producers.module';
 
 import configuration from '../config/configuration';
 import { validate } from '../config/env.validation';
+import { AppLoggerMiddleware } from './middlewares/appLogger.middleware';
 
 @Module({
   imports: [
@@ -26,4 +27,8 @@ import { validate } from '../config/env.validation';
   controllers: [],
   providers: [],
 })
-export class AppModule {}
+export class AppModule implements NestModule {
+  configure(consumer: MiddlewareConsumer): void {
+    consumer.apply(AppLoggerMiddleware).forRoutes('*');
+  }
+}
