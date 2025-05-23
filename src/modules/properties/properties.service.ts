@@ -1,6 +1,7 @@
 import {
   BadRequestException,
   Injectable,
+  Logger,
   NotFoundException,
 } from '@nestjs/common';
 import { PrismaService } from '../../database/prisma.service';
@@ -14,48 +15,68 @@ import { Prisma } from '@prisma/client';
 export class PropertiesService {
   constructor(private readonly prisma: PrismaService) {}
 
+  private readonly logger = new Logger(PropertiesService.name);
+
   async getProperties(params: GetPropertiesDto) {
-    const whereQuery: Prisma.PropertyFindManyArgs['where'] = {
-      state: params.state,
-      name: { contains: params.name, mode: 'insensitive' },
-      producerId: params.producerId,
-    };
+    try {
+      const whereQuery: Prisma.PropertyFindManyArgs['where'] = {
+        state: params.state,
+        name: { contains: params.name, mode: 'insensitive' },
+        producerId: params.producerId,
+      };
 
-    const properties = await this.prisma.property.findMany({
-      where: whereQuery,
-      skip: (params.page - 1) * params.pageSize,
-      take: params.pageSize,
-    });
-    const countProperties = await this.prisma.property.count({
-      where: whereQuery,
-    });
+      const properties = await this.prisma.property.findMany({
+        where: whereQuery,
+        skip: (params.page - 1) * params.pageSize,
+        take: params.pageSize,
+      });
+      const countProperties = await this.prisma.property.count({
+        where: whereQuery,
+      });
 
-    return {
-      data: properties,
-      page: params.page,
-      pageSize: params.pageSize,
-      totalPages: Math.ceil(countProperties / params.pageSize),
-      total: countProperties,
-    };
+      return {
+        data: properties,
+        page: params.page,
+        pageSize: params.pageSize,
+        totalPages: Math.ceil(countProperties / params.pageSize),
+        total: countProperties,
+      };
+    } catch (error) {
+      this.logger.error('Error fetching properties: ', error);
+      throw error;
+    }
   }
 
   async getPropertyById(id: number) {
-    const property = await this.prisma.property.findUnique({
-      where: { id },
-    });
-    if (!property) throw new NotFoundException('Property not found');
-    return property;
+    try {
+      const property = await this.prisma.property.findUnique({
+        where: { id },
+      });
+      if (!property) throw new NotFoundException('Property not found');
+      return property;
+    } catch (error) {
+      if (error instanceof NotFoundException) throw error;
+      this.logger.error('Error fetching property by ID: ', error);
+      throw error;
+    }
   }
 
   async createProperty(data: CreatePropertyDto) {
-    const producer = await this.prisma.producer.findFirst({
-      where: { id: data.producerId },
-    });
-    if (producer === null) throw new BadRequestException('Producer not found');
+    try {
+      const producer = await this.prisma.producer.findFirst({
+        where: { id: data.producerId },
+      });
+      if (producer === null)
+        throw new BadRequestException('Producer not found');
 
-    return await this.prisma.property.create({
-      data,
-    });
+      return await this.prisma.property.create({
+        data,
+      });
+    } catch (error) {
+      if (error instanceof BadRequestException) throw error;
+      this.logger.error('Error creating property: ', error);
+      throw error;
+    }
   }
 
   async updateProperty(id: number, data: UpdatePropertyDto) {
@@ -79,10 +100,14 @@ export class PropertiesService {
         data,
       });
     } catch (error) {
-      // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
-      if (typeof error === 'object' && error?.code === 'P2025') {
+      if (error instanceof BadRequestException) throw error;
+      if (
+        error instanceof Prisma.PrismaClientKnownRequestError &&
+        error?.code === 'P2025'
+      ) {
         throw new NotFoundException('Property not found');
       }
+      this.logger.error('Error updating property: ', error);
       throw error;
     }
   }
@@ -93,10 +118,13 @@ export class PropertiesService {
         where: { id },
       });
     } catch (error) {
-      // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
-      if (typeof error === 'object' && error?.code === 'P2025') {
+      if (
+        error instanceof Prisma.PrismaClientKnownRequestError &&
+        error?.code === 'P2025'
+      ) {
         throw new NotFoundException('Property not found');
       }
+      this.logger.error('Error deleting property: ', error);
       throw error;
     }
   }
@@ -126,6 +154,7 @@ export class PropertiesService {
         areas.vegetationArea === undefined
       ) {
         // Problem with the register in db
+        this.logger.error('Property area is invalid in db. Property id: ', id);
         return false;
       }
       return (

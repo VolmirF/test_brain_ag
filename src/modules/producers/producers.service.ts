@@ -2,6 +2,7 @@ import { instanceToPlain } from 'class-transformer';
 import {
   BadRequestException,
   Injectable,
+  Logger,
   NotFoundException,
 } from '@nestjs/common';
 import { Prisma } from '@prisma/client';
@@ -15,42 +16,55 @@ import { GetProducersDto } from './dtos/get-producers.dto';
 export class ProducersService {
   constructor(private readonly prisma: PrismaService) {}
 
+  private readonly logger = new Logger(ProducersService.name);
+
   async getProducers(params: GetProducersDto) {
-    const whereQuery: Prisma.ProducerFindManyArgs['where'] = {
-      name: {
-        contains: params.name,
-        mode: 'insensitive',
-      },
-      document: params.document,
-      documentType: params.documentType,
-      state: params.state,
-    };
+    try {
+      const whereQuery: Prisma.ProducerFindManyArgs['where'] = {
+        name: {
+          contains: params.name,
+          mode: 'insensitive',
+        },
+        document: params.document,
+        documentType: params.documentType,
+        state: params.state,
+      };
 
-    const producers = await this.prisma.producer.findMany({
-      where: whereQuery,
-      skip: (params.page - 1) * params.pageSize,
-      take: params.pageSize,
-    });
+      const producers = await this.prisma.producer.findMany({
+        where: whereQuery,
+        skip: (params.page - 1) * params.pageSize,
+        take: params.pageSize,
+      });
 
-    const producersCount = await this.prisma.producer.count({
-      where: whereQuery,
-    });
+      const producersCount = await this.prisma.producer.count({
+        where: whereQuery,
+      });
 
-    return {
-      data: producers,
-      page: params.page,
-      pageSize: params.pageSize,
-      totalPages: Math.ceil(producersCount / params.pageSize),
-      total: producersCount,
-    };
+      return {
+        data: producers,
+        page: params.page,
+        pageSize: params.pageSize,
+        totalPages: Math.ceil(producersCount / params.pageSize),
+        total: producersCount,
+      };
+    } catch (error) {
+      this.logger.error('Error fetching producers: ', error);
+      throw error;
+    }
   }
 
   async getProducerById(id: number) {
-    const producer = await this.prisma.producer.findUnique({
-      where: { id },
-    });
-    if (!producer) throw new NotFoundException('Producer not found');
-    return producer;
+    try {
+      const producer = await this.prisma.producer.findUnique({
+        where: { id },
+      });
+      if (!producer) throw new NotFoundException('Producer not found');
+      return producer;
+    } catch (error) {
+      if (error instanceof NotFoundException) throw error;
+      this.logger.error('Error fetching producer by ID: ', error);
+      throw error;
+    }
   }
 
   async createProducer(data: CreateProducerDto) {
@@ -68,6 +82,7 @@ export class ProducersService {
             `Document already used by another record`,
           );
       }
+      this.logger.error('Error creating producer: ', error);
       throw error;
     }
   }
@@ -92,7 +107,7 @@ export class ProducersService {
           );
         }
       }
-      console.log('error', error);
+      this.logger.error('Error updating producer: ', error);
       throw error;
     }
   }
@@ -109,6 +124,7 @@ export class ProducersService {
       ) {
         throw new NotFoundException('Producer not found');
       }
+      this.logger.error('Error deleting producer: ', error);
       throw error;
     }
   }

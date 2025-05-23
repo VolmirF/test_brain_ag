@@ -1,4 +1,4 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { Injectable, Logger, NotFoundException } from '@nestjs/common';
 import { Prisma } from '@prisma/client';
 
 import { PrismaService } from '../../database/prisma.service';
@@ -10,45 +10,64 @@ import { GetCropsDto } from './dtos/get-crops.dto';
 export class CropsService {
   constructor(private readonly prisma: PrismaService) {}
 
+  private readonly logger = new Logger(CropsService.name);
+
   async getCrops(params: GetCropsDto) {
-    const whereQuery: Prisma.CropsFindManyArgs['where'] = {
-      name: {
-        contains: params.name,
-        mode: 'insensitive',
-      },
-    };
+    try {
+      const whereQuery: Prisma.CropsFindManyArgs['where'] = {
+        name: {
+          contains: params.name,
+          mode: 'insensitive',
+        },
+      };
 
-    const crops = await this.prisma.crops.findMany({
-      where: whereQuery,
-      skip: (params.page - 1) * params.pageSize,
-      take: params.pageSize,
-    });
-    const countCrops = await this.prisma.crops.count({
-      where: whereQuery,
-    });
+      const crops = await this.prisma.crops.findMany({
+        where: whereQuery,
+        skip: (params.page - 1) * params.pageSize,
+        take: params.pageSize,
+      });
+      const countCrops = await this.prisma.crops.count({
+        where: whereQuery,
+      });
 
-    return {
-      data: crops,
-      page: params.page,
-      pageSize: params.pageSize,
-      totalPages: Math.ceil(countCrops / params.pageSize),
-      total: countCrops,
-    };
+      return {
+        data: crops,
+        page: params.page,
+        pageSize: params.pageSize,
+        totalPages: Math.ceil(countCrops / params.pageSize),
+        total: countCrops,
+      };
+    } catch (error) {
+      this.logger.error('Error fetching crops: ', error);
+      throw error;
+    }
   }
 
   async getCropById(id: number) {
-    const crop = await this.prisma.crops.findUnique({
-      where: { id },
-    });
+    try {
+      const crop = await this.prisma.crops.findUnique({
+        where: { id },
+      });
 
-    if (!crop) throw new NotFoundException('Crop not found');
-    return crop;
+      if (!crop) throw new NotFoundException('Crop not found');
+      return crop;
+    } catch (error) {
+      if (error instanceof NotFoundException) throw error;
+
+      this.logger.error('Error fetching crop by ID: ', error);
+      throw error;
+    }
   }
 
   async createCrop(data: CreateCropDto) {
-    return await this.prisma.crops.create({
-      data,
-    });
+    try {
+      return await this.prisma.crops.create({
+        data,
+      });
+    } catch (error) {
+      this.logger.error('Error creating crop: ', error);
+      throw error;
+    }
   }
 
   async updateCrop(id: number, data: UpdateCropDto) {
@@ -58,10 +77,13 @@ export class CropsService {
         data,
       });
     } catch (error) {
-      // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
-      if (typeof error === 'object' && error?.code === 'P2025') {
+      if (
+        error instanceof Prisma.PrismaClientKnownRequestError &&
+        error?.code === 'P2025'
+      ) {
         throw new NotFoundException('Crop not found');
       }
+      this.logger.error('Error updating crop: ', error);
       throw error;
     }
   }
@@ -72,10 +94,13 @@ export class CropsService {
         where: { id },
       });
     } catch (error) {
-      // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
-      if (typeof error === 'object' && error?.code === 'P2025') {
+      if (
+        error instanceof Prisma.PrismaClientKnownRequestError &&
+        error?.code === 'P2025'
+      ) {
         throw new NotFoundException('Crop not found');
       }
+      this.logger.error('Error deleting crop: ', error);
       throw error;
     }
   }

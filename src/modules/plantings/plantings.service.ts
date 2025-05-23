@@ -1,6 +1,7 @@
 import {
   BadRequestException,
   Injectable,
+  Logger,
   NotFoundException,
 } from '@nestjs/common';
 import { Prisma } from '@prisma/client';
@@ -14,53 +15,73 @@ import { GetPlantingsDto } from './dtos/get-plantings.dto';
 export class PlantingsService {
   constructor(private readonly prisma: PrismaService) {}
 
+  private readonly logger = new Logger(PlantingsService.name);
+
   async getPlantings(params: GetPlantingsDto) {
-    const whereQuery: Prisma.PlantingFindManyArgs['where'] = {
-      propertyId: params.propertyId,
-      cropId: params.cropId,
-      year: params.year,
-    };
+    try {
+      const whereQuery: Prisma.PlantingFindManyArgs['where'] = {
+        propertyId: params.propertyId,
+        cropId: params.cropId,
+        year: params.year,
+      };
 
-    const plantings = await this.prisma.planting.findMany({
-      where: whereQuery,
-      skip: (params.page - 1) * params.pageSize,
-      take: params.pageSize,
-    });
-    const countPlantings = await this.prisma.planting.count({
-      where: whereQuery,
-    });
+      const plantings = await this.prisma.planting.findMany({
+        where: whereQuery,
+        skip: (params.page - 1) * params.pageSize,
+        take: params.pageSize,
+      });
+      const countPlantings = await this.prisma.planting.count({
+        where: whereQuery,
+      });
 
-    return {
-      data: plantings,
-      page: params.page,
-      pageSize: params.pageSize,
-      totalPages: Math.ceil(countPlantings / params.pageSize),
-      total: countPlantings,
-    };
+      return {
+        data: plantings,
+        page: params.page,
+        pageSize: params.pageSize,
+        totalPages: Math.ceil(countPlantings / params.pageSize),
+        total: countPlantings,
+      };
+    } catch (error) {
+      this.logger.error('Error fetching plantings: ', error);
+      throw error;
+    }
   }
 
   async getPlantingById(id: number) {
-    const planting = await this.prisma.planting.findUnique({
-      where: { id },
-    });
-    if (!planting) throw new NotFoundException('Planting not found');
-    return planting;
+    try {
+      const planting = await this.prisma.planting.findUnique({
+        where: { id },
+      });
+      if (!planting) throw new NotFoundException('Planting not found');
+      return planting;
+    } catch (error) {
+      if (error instanceof NotFoundException) throw error;
+      this.logger.error('Error fetching planting by ID: ', error);
+      throw error;
+    }
   }
 
   async createPlanting(data: CreatePlantingDto) {
-    const property = await this.prisma.property.findFirst({
-      where: { id: data.propertyId },
-    });
-    if (property === null) throw new BadRequestException('Property not found');
+    try {
+      const property = await this.prisma.property.findFirst({
+        where: { id: data.propertyId },
+      });
+      if (property === null)
+        throw new BadRequestException('Property not found');
 
-    const crop = await this.prisma.crops.findFirst({
-      where: { id: data.cropId },
-    });
-    if (crop === null) throw new BadRequestException('Crop not found');
+      const crop = await this.prisma.crops.findFirst({
+        where: { id: data.cropId },
+      });
+      if (crop === null) throw new BadRequestException('Crop not found');
 
-    return await this.prisma.planting.create({
-      data,
-    });
+      return await this.prisma.planting.create({
+        data,
+      });
+    } catch (error) {
+      if (error instanceof BadRequestException) throw error;
+      this.logger.error('Error creating planting: ', error);
+      throw error;
+    }
   }
 
   async updatePlanting(id: number, data: UpdatePlantingDto) {
@@ -85,10 +106,14 @@ export class PlantingsService {
         data,
       });
     } catch (error) {
-      // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
-      if (typeof error === 'object' && error?.code === 'P2025') {
+      if (error instanceof BadRequestException) throw error;
+      if (
+        error instanceof Prisma.PrismaClientKnownRequestError &&
+        error?.code === 'P2025'
+      ) {
         throw new NotFoundException('Planting not found');
       }
+      this.logger.error('Error updating planting: ', error);
       throw error;
     }
   }
@@ -99,10 +124,13 @@ export class PlantingsService {
         where: { id },
       });
     } catch (error) {
-      // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
-      if (typeof error === 'object' && error?.code === 'P2025') {
+      if (
+        error instanceof Prisma.PrismaClientKnownRequestError &&
+        error?.code === 'P2025'
+      ) {
         throw new NotFoundException('Planting not found');
       }
+      this.logger.error('Error deleting planting: ', error);
       throw error;
     }
   }
