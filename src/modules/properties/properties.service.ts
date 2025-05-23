@@ -1,4 +1,8 @@
-import { BadRequestException, Injectable } from '@nestjs/common';
+import {
+  BadRequestException,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
 import { PrismaService } from '../../database/prisma.service';
 
 import { CreatePropertyDto } from './dtos/create-property.dto';
@@ -36,34 +40,65 @@ export class PropertiesService {
   }
 
   async getPropertyById(id: number) {
-    return await this.prisma.property.findUnique({
+    const property = await this.prisma.property.findUnique({
       where: { id },
     });
+    if (!property) throw new NotFoundException('Property not found');
+    return property;
   }
 
   async createProperty(data: CreatePropertyDto) {
+    const producer = await this.prisma.producer.findFirst({
+      where: { id: data.producerId },
+    });
+    if (producer === null) throw new BadRequestException('Producer not found');
+
     return await this.prisma.property.create({
       data,
     });
   }
 
   async updateProperty(id: number, data: UpdatePropertyDto) {
-    if (!(await this.propertyAreaIsValid(data, id))) {
-      throw new BadRequestException(
-        'The sum of arableArea, farmArea and vegetationArea must be greater than farmArea.',
-      );
-    }
+    try {
+      if (data.producerId) {
+        const producer = await this.prisma.producer.findFirst({
+          where: { id: data.producerId },
+        });
+        if (producer === null)
+          throw new BadRequestException('Property not found');
+      }
 
-    return await this.prisma.property.update({
-      where: { id },
-      data,
-    });
+      if (!(await this.propertyAreaIsValid(data, id))) {
+        throw new BadRequestException(
+          'The sum of arableArea, farmArea and vegetationArea must be greater than farmArea.',
+        );
+      }
+
+      return await this.prisma.property.update({
+        where: { id },
+        data,
+      });
+    } catch (error) {
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
+      if (typeof error === 'object' && error?.code === 'P2025') {
+        throw new NotFoundException('Property not found');
+      }
+      throw error;
+    }
   }
 
   async deleteProperty(id: number) {
-    return await this.prisma.property.delete({
-      where: { id },
-    });
+    try {
+      await this.prisma.property.delete({
+        where: { id },
+      });
+    } catch (error) {
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
+      if (typeof error === 'object' && error?.code === 'P2025') {
+        throw new NotFoundException('Property not found');
+      }
+      throw error;
+    }
   }
 
   private async propertyAreaIsValid(data: UpdatePropertyDto, id?: number) {
@@ -93,7 +128,10 @@ export class PropertiesService {
         // Problem with the register in db
         return false;
       }
-      return areas.farmArea >= areas.arableArea + areas.vegetationArea;
+      return (
+        Number(areas.farmArea) >=
+        Number(areas.arableArea) + Number(areas.vegetationArea)
+      );
     }
     // Area is not been updated, no need to check
     return true;

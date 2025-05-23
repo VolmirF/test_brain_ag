@@ -3,6 +3,7 @@ import {
   Controller,
   Delete,
   Get,
+  HttpCode,
   Param,
   Patch,
   Post,
@@ -47,6 +48,7 @@ export class PlantingsController {
   }
 
   @Delete(':id')
+  @HttpCode(204)
   @ApiOperation({ summary: 'Delete a planting by id' })
   deletePlanting(@Param('id') id: number) {
     return this.plantingsService.deletePlanting(id);

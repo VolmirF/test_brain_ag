@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, NotFoundException } from '@nestjs/common';
 import { Prisma } from '@prisma/client';
 
 import { PrismaService } from '../../database/prisma.service';
@@ -37,9 +37,12 @@ export class CropsService {
   }
 
   async getCropById(id: number) {
-    return await this.prisma.crops.findUnique({
+    const crop = await this.prisma.crops.findUnique({
       where: { id },
     });
+
+    if (!crop) throw new NotFoundException('Crop not found');
+    return crop;
   }
 
   async createCrop(data: CreateCropDto) {
@@ -49,15 +52,31 @@ export class CropsService {
   }
 
   async updateCrop(id: number, data: UpdateCropDto) {
-    return await this.prisma.crops.update({
-      where: { id },
-      data,
-    });
+    try {
+      return await this.prisma.crops.update({
+        where: { id },
+        data,
+      });
+    } catch (error) {
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
+      if (typeof error === 'object' && error?.code === 'P2025') {
+        throw new NotFoundException('Crop not found');
+      }
+      throw error;
+    }
   }
 
   async deleteCrop(id: number) {
-    return await this.prisma.crops.delete({
-      where: { id },
-    });
+    try {
+      await this.prisma.crops.delete({
+        where: { id },
+      });
+    } catch (error) {
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
+      if (typeof error === 'object' && error?.code === 'P2025') {
+        throw new NotFoundException('Crop not found');
+      }
+      throw error;
+    }
   }
 }

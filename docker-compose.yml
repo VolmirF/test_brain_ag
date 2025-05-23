@@ -27,6 +27,16 @@ services:
       - postgres_data:/var/lib/postgresql/data
     networks:
       - app-network
+  postgres-test-db:
+    image: postgres:15
+    container_name: postgres_db_test
+    restart: always
+    ports:
+      - '5433:5432' #! Mapping to the 5433 port
+    environment:
+      POSTGRES_USER: teste
+      POSTGRES_PASSWORD: test
+      POSTGRES_DB: test
 
 volumes:
   postgres_data:

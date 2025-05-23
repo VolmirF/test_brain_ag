@@ -1,4 +1,8 @@
-import { Injectable } from '@nestjs/common';
+import {
+  BadRequestException,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
 import { Prisma } from '@prisma/client';
 
 import { PrismaService } from '../../database/prisma.service';
@@ -36,27 +40,70 @@ export class PlantingsService {
   }
 
   async getPlantingById(id: number) {
-    return await this.prisma.planting.findUnique({
+    const planting = await this.prisma.planting.findUnique({
       where: { id },
     });
+    if (!planting) throw new NotFoundException('Planting not found');
+    return planting;
   }
 
   async createPlanting(data: CreatePlantingDto) {
+    const property = await this.prisma.property.findFirst({
+      where: { id: data.propertyId },
+    });
+    if (property === null) throw new BadRequestException('Property not found');
+
+    const crop = await this.prisma.crops.findFirst({
+      where: { id: data.cropId },
+    });
+    if (crop === null) throw new BadRequestException('Crop not found');
+
     return await this.prisma.planting.create({
       data,
     });
   }
 
   async updatePlanting(id: number, data: UpdatePlantingDto) {
-    return await this.prisma.planting.update({
-      where: { id },
-      data,
-    });
+    try {
+      if (data.propertyId) {
+        const property = await this.prisma.property.findFirst({
+          where: { id: data.propertyId },
+        });
+        if (property === null)
+          throw new BadRequestException('Property not found');
+      }
+
+      if (data.cropId) {
+        const crop = await this.prisma.crops.findFirst({
+          where: { id: data.cropId },
+        });
+        if (crop === null) throw new BadRequestException('Crop not found');
+      }
+
+      return await this.prisma.planting.update({
+        where: { id },
+        data,
+      });
+    } catch (error) {
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
+      if (typeof error === 'object' && error?.code === 'P2025') {
+        throw new NotFoundException('Planting not found');
+      }
+      throw error;
+    }
   }
 
   async deletePlanting(id: number) {
-    return await this.prisma.planting.delete({
-      where: { id },
-    });
+    try {
+      await this.prisma.planting.delete({
+        where: { id },
+      });
+    } catch (error) {
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
+      if (typeof error === 'object' && error?.code === 'P2025') {
+        throw new NotFoundException('Planting not found');
+      }
+      throw error;
+    }
   }
 }

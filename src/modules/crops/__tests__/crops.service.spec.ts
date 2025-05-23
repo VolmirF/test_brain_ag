@@ -120,7 +120,8 @@ describe('CropsService', () => {
       expect(prismaMock.crops.delete).toHaveBeenCalledWith({
         where: { id: 1 },
       });
-      expect(result).toEqual(mockCrops);
+
+      expect(result).toEqual(undefined);
     });
   });
 });

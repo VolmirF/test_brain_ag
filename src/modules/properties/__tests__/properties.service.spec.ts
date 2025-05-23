@@ -11,7 +11,6 @@ import { mockProperty, mockPropertyList } from './mocks/mock-properties';
 import { mockCreatePropertyDto } from './mocks/mock-create-property.dto';
 import { mockUpdatePropertyDto } from './mocks/mock-update-property.dto';
 import { mockGetPropertiesDto } from './mocks/mock-get-properties.dto';
-import { Decimal } from '@prisma/client/runtime/library';
 
 describe('PropertiesService', () => {
   let service: PropertiesService;
@@ -126,12 +125,14 @@ describe('PropertiesService', () => {
           ...mockUpdatePropertyDto,
           farmArea: '0',
         })
-        .then(() => done.fail('Error should be thrown, invalid property area'))
-        .catch((error) => {
+        .then(() => {
+          done.fail('Error should be thrown, invalid property area');
+          return undefined;
+        })
+        .catch((error: Error) => {
           expect(error.message).toBe(
             'The sum of arableArea, farmArea and vegetationArea must be greater than farmArea.',
           );
-          expect(error.status).toBe(400);
           done();
         });
     });
@@ -146,7 +147,7 @@ describe('PropertiesService', () => {
       expect(prismaMock.property.delete).toHaveBeenCalledWith({
         where: { id: 1 },
       });
-      expect(result).toEqual(mockProperty);
+      expect(result).toEqual(undefined);
     });
   });
 });

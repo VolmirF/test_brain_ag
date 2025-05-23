@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/unbound-method */
 import { Test, TestingModule } from '@nestjs/testing';
 import { DashboardController } from '../dashboard.controller';
 import { DashboardService } from '../dashboard.service';

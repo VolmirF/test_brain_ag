@@ -3,6 +3,7 @@ import {
   Controller,
   Delete,
   Get,
+  HttpCode,
   Param,
   Patch,
   Post,
@@ -44,6 +45,7 @@ export class CropsController {
   }
 
   @Delete(':id')
+  @HttpCode(204)
   @ApiOperation({ summary: 'Deletes a crop by id' })
   deleteCrop(@Param('id') id: number) {
     return this.cropsService.deleteCrop(id);

@@ -43,7 +43,7 @@ model Crops {
 
 model Property {
   id         Int        @id @default(autoincrement())
-  producer   Producer   @relation(fields: [producerId], references: [id])
+  producer   Producer   @relation(fields: [producerId], references: [id], onDelete: Cascade)
   producerId Int        @map("producer_id")
   plantings  Planting[]
 
@@ -62,10 +62,10 @@ model Property {
 
 model Planting {
   id         Int      @id @default(autoincrement())
-  property   Property @relation(fields: [propertyId], references: [id])
+  property   Property @relation(fields: [propertyId], references: [id], onDelete: Cascade)
   propertyId Int      @map("property_id")
-  crop       Crops    @relation(fields: [cropId], references: [id])
-  cropId     Int      @map("crop_id")
+  crop       Crops?   @relation(fields: [cropId], references: [id])
+  cropId     Int?     @map("crop_id")
 
   year Int
   area Decimal  @db.Decimal(10, 2)

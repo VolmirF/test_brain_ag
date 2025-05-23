@@ -123,7 +123,7 @@ describe('PlantingsService', () => {
       expect(prismaMock.planting.delete).toHaveBeenCalledWith({
         where: { id: 1 },
       });
-      expect(result).toEqual(mockPlanting);
+      expect(result).toEqual(undefined);
     });
   });
 });

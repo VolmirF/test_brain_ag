@@ -19,6 +19,7 @@ export class DashboardService {
       by: ['cropId'],
       _count: { cropId: true },
       _sum: { area: true },
+      where: { cropId: { not: null } },
     });
     const byLandUse = await this.prisma.property.aggregate({
       _sum: {
@@ -47,7 +48,7 @@ export class DashboardService {
       }),
       byCrop: byCrop.map((data) => {
         return {
-          name: cropsMap[data.cropId],
+          name: data.cropId ? cropsMap[data.cropId] : '',
           count: data._count.cropId,
           area: data._sum.area,
         };

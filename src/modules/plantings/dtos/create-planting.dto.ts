@@ -1,5 +1,5 @@
 import { Type } from 'class-transformer';
-import { IsDecimal, IsNumber } from 'class-validator';
+import { IsDecimal, IsNumber, IsOptional } from 'class-validator';
 
 export class CreatePlantingDto {
   @IsNumber()
@@ -16,6 +16,7 @@ export class CreatePlantingDto {
   area: string;
 
   @Type(() => String)
+  @IsOptional()
   @IsDecimal()
   yeld?: string;
 }

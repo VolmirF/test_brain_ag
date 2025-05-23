@@ -3,9 +3,11 @@ import {
   Controller,
   Delete,
   Get,
+  HttpCode,
   Param,
   Patch,
   Post,
+  Query,
 } from '@nestjs/common';
 import { ApiOperation } from '@nestjs/swagger';
 
@@ -20,7 +22,7 @@ export class ProducersController {
 
   @Get()
   @ApiOperation({ summary: 'Get all producers' })
-  getProducers(params: GetProducersDto) {
+  getProducers(@Query() params: GetProducersDto) {
     return this.producersService.getProducers(params);
   }
 
@@ -43,6 +45,7 @@ export class ProducersController {
   }
 
   @Delete(':id')
+  @HttpCode(204)
   @ApiOperation({ summary: 'Delete producer' })
   deleteProducer(@Param('id') id: number) {
     return this.producersService.deleteProducer(id);

@@ -129,7 +129,7 @@ describe('ProducersService', () => {
       expect(prismaMock.producer.delete).toHaveBeenCalledWith({
         where: { id: 1 },
       });
-      expect(result).toEqual(mockProducer);
+      expect(result).toEqual(undefined);
     });
   });
 });

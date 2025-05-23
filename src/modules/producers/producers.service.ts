@@ -1,5 +1,9 @@
 import { instanceToPlain } from 'class-transformer';
-import { Injectable } from '@nestjs/common';
+import {
+  BadRequestException,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
 import { Prisma } from '@prisma/client';
 
 import { PrismaService } from '../../database/prisma.service';
@@ -42,27 +46,70 @@ export class ProducersService {
   }
 
   async getProducerById(id: number) {
-    return await this.prisma.producer.findUnique({
+    const producer = await this.prisma.producer.findUnique({
       where: { id },
     });
+    if (!producer) throw new NotFoundException('Producer not found');
+    return producer;
   }
 
   async createProducer(data: CreateProducerDto) {
-    return await this.prisma.producer.create({
-      data: instanceToPlain(data) as CreateProducerDto,
-    });
+    try {
+      return await this.prisma.producer.create({
+        data: instanceToPlain(data) as CreateProducerDto,
+      });
+    } catch (error) {
+      if (
+        error instanceof Prisma.PrismaClientKnownRequestError &&
+        error?.code === 'P2002'
+      ) {
+        if (error?.meta?.target?.[0] === 'document')
+          throw new BadRequestException(
+            `Document already used by another record`,
+          );
+      }
+      throw error;
+    }
   }
 
   async updateProducer(id: number, data: UpdateProducerDto) {
-    return await this.prisma.producer.update({
-      where: { id },
-      data: instanceToPlain(data) as UpdateProducerDto,
-    });
+    try {
+      const producer = await this.prisma.producer.update({
+        where: { id },
+        data: instanceToPlain(data) as UpdateProducerDto,
+      });
+      return producer;
+    } catch (error: any) {
+      if (error instanceof Prisma.PrismaClientKnownRequestError) {
+        if (error?.code === 'P2025')
+          throw new NotFoundException('Producer not found');
+        if (
+          error?.code === 'P2002' &&
+          error?.meta?.target?.[0] === 'document'
+        ) {
+          throw new BadRequestException(
+            `Document already used by another record`,
+          );
+        }
+      }
+      console.log('error', error);
+      throw error;
+    }
   }
 
   async deleteProducer(id: number) {
-    return await this.prisma.producer.delete({
-      where: { id },
-    });
+    try {
+      await this.prisma.producer.delete({
+        where: { id },
+      });
+    } catch (error) {
+      if (
+        error instanceof Prisma.PrismaClientKnownRequestError &&
+        error?.code === 'P2025'
+      ) {
+        throw new NotFoundException('Producer not found');
+      }
+      throw error;
+    }
   }
 }

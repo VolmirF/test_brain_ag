@@ -3,6 +3,7 @@ import {
   Controller,
   Delete,
   Get,
+  HttpCode,
   Param,
   Patch,
   Post,
@@ -44,6 +45,7 @@ export class PropertiesController {
   }
 
   @Delete(':id')
+  @HttpCode(204)
   @ApiOperation({ summary: 'Delete property' })
   deleteProperty(@Param('id') id: number) {
     return this.propertiesService.deleteProperty(id);
